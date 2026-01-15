@@ -7,6 +7,7 @@ import yt_dlp
 from pathlib import Path
 from typing import Optional, Dict, Any, List, Callable
 import re
+import shutil
 
 from .logger import DebugLogger
 from .platform_utils import PlatformUtils
@@ -48,6 +49,13 @@ class YouTubeDownloader:
         self.username = username
         self.password = password
         
+        # Check for ffmpeg
+        self.ffmpeg_available = shutil.which('ffmpeg') is not None
+        if not self.ffmpeg_available:
+            # Log warning about missing ffmpeg
+            if self.logger:
+                self.logger.warning("ffmpeg not found. Download quality options will be limited to single files.")
+        
         PlatformUtils.ensure_directory(output_dir)
     
     def _get_format_selector(self) -> str:
@@ -58,18 +66,29 @@ class YouTubeDownloader:
             Format selector string
         """
         if self.quality == 'best':
-            # Best video + best audio
-            return 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
+            # Best video + best audio if ffmpeg available
+            if self.ffmpeg_available:
+                return 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
+            # Prefer HTTP download which is more robust without external tools/complex handling
+            return 'best[ext=mp4][protocol^=http]/best[ext=mp4]/best'
+            
         elif self.quality == 'audio':
             # Audio only
             return 'bestaudio/best'
+            
         elif self.quality.endswith('p'):
             # Specific resolution (e.g., 1080p, 720p)
             height = self.quality[:-1]
-            return f'bestvideo[height<={height}][ext=mp4]+bestaudio[ext=m4a]/best[height<={height}]/best'
+            if self.ffmpeg_available:
+                return f'bestvideo[height<={height}][ext=mp4]+bestaudio[ext=m4a]/best[height<={height}]/best'
+            # Try to get HTTP based format first as it's more reliable without ffmpeg
+            return f'best[height<={height}][ext=mp4][protocol^=http]/best[height<={height}][ext=mp4]/best[height<={height}]/best'
+            
         else:
             # Fallback to best
-            return 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
+            if self.ffmpeg_available:
+                return 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
+            return 'best[ext=mp4][protocol^=http]/best[ext=mp4]/best'
     
     def _build_ydl_opts(
         self,
@@ -104,13 +123,14 @@ class YouTubeDownloader:
             'quiet': not self.logger.verbose,
             'no_warnings': not self.logger.verbose,
             'ignoreerrors': False,
-            'merge_output_format': self.format_ext if self.quality != 'audio' else None,
+            'merge_output_format': self.format_ext if (self.quality != 'audio' and self.ffmpeg_available) else None,
             'writethumbnail': embed_thumbnail,
             'writesubtitles': download_transcripts,
             'writeautomaticsub': download_transcripts,
             'subtitleslangs': transcript_languages or ['en'],
             'subtitlesformat': 'vtt/srt/best',
-            'embedthumbnail': embed_thumbnail,
+            # Only enable embedding if ffmpeg is available
+            'embedthumbnail': embed_thumbnail and self.ffmpeg_available,
             'embedsubtitles': False,  # Keep subtitles as separate files
             'writedescription': write_description,
             'writeinfojson': write_info_json,
@@ -121,13 +141,13 @@ class YouTubeDownloader:
         # Add post-processors
         postprocessors = []
         
-        if embed_metadata:
+        if embed_metadata and self.ffmpeg_available:
             postprocessors.append({'key': 'FFmpegMetadata'})
         
-        if embed_thumbnail:
+        if embed_thumbnail and self.ffmpeg_available:
             postprocessors.append({'key': 'EmbedThumbnail'})
         
-        if self.quality == 'audio':
+        if self.quality == 'audio' and self.ffmpeg_available:
             postprocessors.append({
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
