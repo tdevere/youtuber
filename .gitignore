@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Project Specific - Downloaded Content
+downloads/                 # Downloaded videos directory
+*.mp4                     # Video files
+*.mkv
+*.webm
+*.mp3
+*.m4a
+*.wav
+*.webp                    # Thumbnails
+*.jpg
+*.png
+*.description             # Video descriptions
+*.info.json               # Video metadata
+*.vtt                     # Subtitle files
+*.srt
+
+# Project Specific - User Data & Secrets
+*.db                      # SQLite databases (contains user collection)
+*.db-journal
+logs/                     # Log files
+*.log
+config.json               # User configuration (may contain paths)
+cookies.txt               # Browser cookies for authentication - SENSITIVE
+*.cookies                 # Cookie files - SENSITIVE
+.env                      # Environment variables - SENSITIVE
+
+# OS
+Thumbs.db
+desktop.ini

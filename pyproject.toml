@@ -1,0 +1,74 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "youtuber"
+version = "1.0.0"
+description = "Professional cross-platform YouTube video downloader with collection management"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "YouTuber Developer"}
+]
+keywords = ["youtube", "downloader", "cli", "video", "transcript", "collection"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Video",
+]
+
+dependencies = [
+    "yt-dlp>=2024.12.0",
+    "click>=8.1.0",
+    "rich>=13.7.0",
+    "platformdirs>=4.0.0",
+    "requests>=2.31.0",
+    "python-dateutil>=2.8.0",
+    "colorama>=0.4.6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.5.0",
+]
+
+[project.scripts]
+youtuber = "youtuber.cli:main"
+yt = "youtuber.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/yourusername/youtuber"
+Repository = "https://github.com/yourusername/youtuber"
+Issues = "https://github.com/yourusername/youtuber/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.setuptools.package-dir]
+"" = "."
+
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
